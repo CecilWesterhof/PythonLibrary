@@ -11,6 +11,14 @@ If you would like to see a certain function: let me know.
 
 The files contain the following functions:
 
+In fileBasedMessages.py:
+- dequeue_message
+- get_message
+- get_nr_of_messages
+- queue_message
+- save_history
+- used_messages
+
 In mathDecebal.py:
 - fibonacci
 - fibonacci_memoize
