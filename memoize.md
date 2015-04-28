@@ -27,3 +27,5 @@ So instead of an exponential growth there is a linear growth. This means that ev
 * F320 -> 0.038
 * F325 -> 0.038
 * F330 -> 0.038
+
+The Fibonacci function is used to test memoize and the 40th value is most of the time calculated more as 750.000 times faster. Very significant indeed.

@@ -1,5 +1,3 @@
-import timeit
-
 from utilDecebal import memoize
 
 
@@ -53,6 +51,8 @@ def time_function(name, n, description = ''):
 
 
 if __name__ == '__main__':
+    import timeit
+
     for n in range(15, 36, 5):
         time_function('fibonacci', n)
     print
