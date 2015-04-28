@@ -2,11 +2,11 @@
 
 A Python library with useful functions.  
 Copyright:  
-  2015 by Cecil Westerhof
+    2015 by Cecil Westerhof  
 Contact:  
-  Send me an email (python@decebal.nl)
+    [Send me an email](python@decebal.nl)
 
-If you would like to see a certain function: let me know.
+If you would like to see a certain function/class: let me know.
 
 The files contain the following functions:
 
