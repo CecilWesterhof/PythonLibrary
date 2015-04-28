@@ -1,12 +1,11 @@
 # PythonLibrary
 
-<pre>
-A Python library with useful functions.
-Copyright:
+A Python library with useful functions.  
+Copyright:  
   2015 by Cecil Westerhof
-Contact:
+Contact:  
   Send me an email (python@decebal.nl)
-</pre>
+
 If you would like to see a certain function: let me know.
 
 The files contain the following functions:
