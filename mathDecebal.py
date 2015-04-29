@@ -1,3 +1,7 @@
+import sys
+
+from timeit import timeit
+
 from utilDecebal import memoize
 
 
@@ -37,30 +41,51 @@ def fibonacci_memoize_after_clearing(n):
     fibonacci_memoize()
     fibonacci_memoize(n)
 
-def time_function(name, n, description = ''):
+def time_function(name, n, repeats, description = '', display = True):
     """
     Helper function to test the performance of functions
     """
 
-    if description == '':
-        description = name
-    print 'Timing {0}({1})'.format(description, n)
-    print(timeit.timeit('{0}({1})'.format(name, n),
-                        setup   = 'from mathDecebal import {0}'.format(name),
-                        number  = 100))
+    if display:
+        if description == '':
+            description = name
+        sys.stdout.write('Timing {0}({1}): '.format(description, n))
+        sys.stdout.flush()
+    used_time = timeit('{0}({1})'.format(name, n),
+                       setup   = 'from mathDecebal import {0}'.format(name),
+                       number  = repeats)
+    if display:
+        print(used_time)
+    return used_time
 
 
 if __name__ == '__main__':
-    import timeit
-
+    print('Testing fibonacci')
+    repeats = 100
+    print('Start with the time to calculate {0} times'.format(repeats))
     for n in range(15, 36, 5):
-        time_function('fibonacci', n)
+        time_function('fibonacci', n, repeats)
     print
     for n in range(15, 36, 5):
-        time_function('fibonacci_memoize_after_clearing', n,
+        time_function('fibonacci_memoize_after_clearing', n, repeats,
                       'fibonacci_memoize')
     print
     for n in range(310, 335, 5):
-        time_function('fibonacci_memoize_after_clearing', n,
+        time_function('fibonacci_memoize_after_clearing', n, repeats,
                       'fibonacci_memoize')
+    print
+
+    large_fibonacci     = 40
+    print('Calculating fibonacci and fibonacci_memoize once for ' +
+          str(large_fibonacci) + ' to determine speed increase')
+    time_fibonacci      = time_function('fibonacci', large_fibonacci, 1,
+                                        display = False)
+    time_fibonacci_mem  = time_function('fibonacci_memoize_after_clearing',
+                                        large_fibonacci, 1,
+                                        display = False)
+    print('fibonacci_memoize({3}) was {0} times faster as fibonacci({3}) ({1} / {2})'.
+        format(int(time_fibonacci / time_fibonacci_mem),
+               time_fibonacci,
+               time_fibonacci_mem,
+               large_fibonacci))
     print
