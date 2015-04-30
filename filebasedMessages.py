@@ -1,8 +1,9 @@
 """
 Some functions for file based message habdling
 It does not take care of race conditions
-So if it is called at the same time from different threads/programs
-corruption is possible.
+So if mutating functions are called at the same time from different
+threads/programs corruption is possible.
+
 Defined functions:
 - dequeue_message
 - get_indexed_message
@@ -13,6 +14,7 @@ Defined functions:
 - used_messages
 """
 
+from itertools  import islice
 from marshal    import dump, load
 from os.path    import expanduser
 from random     import randint
@@ -22,10 +24,12 @@ class GetMessageError(Exception):
     pass
 
 
-def dequeue_message(message_filename, save_filename = None):
+### Have a special case for large files
+def dequeue_message(message_filename, save_filename = None, isLarge? = False):
     """
     Get the first message from a file and remove it from the file
     If save_filename not None use it to save the message
+    Not intended for large files (yet)
     """
 
     with open(expanduser(message_filename), 'r') as f:
@@ -44,14 +48,23 @@ def dequeue_message(message_filename, save_filename = None):
 def get_indexed_message(message_filename, index):
     """
     Get index message from a file, where 0 gets the first message
+    Use get_nr_of_messages to get the number of messages in the file
     """
 
+    assert index >= 0
     with open(expanduser(message_filename), 'r') as f:
-        return f.readlines()[index].rstrip()
+        try:
+            [line] = islice(f, index, index + 1)
+        except ValueError:
+            raise IndexError
+        return line.rstrip()
 
 def get_nr_of_messages(message_filename):
+    i = -1
     with open(expanduser(message_filename), 'r') as f:
-        return len(f.readlines())
+        for i, l in enumerate(f):
+            pass
+    return i + 1
 
 def get_random_message(message_filename, marshal_filename,
                 history, need_warning, max_tries):
@@ -59,10 +72,8 @@ def get_random_message(message_filename, marshal_filename,
     Get a random message from a file which is not used in 'recent history'
     """
 
-    with open(expanduser(message_filename), 'r') as f:
-        messages = f.readlines()
     not_list    = used_messages(marshal_filename)
-    nr_of_msg   = len(messages)
+    nr_of_msg   = get_nr_of_messages(message_filename)
     tries       = 0
 
     # If there are not more messages as history you will run out of messages
@@ -91,7 +102,7 @@ def get_random_message(message_filename, marshal_filename,
     if len(not_list) > history:
         del not_list[0]
     save_history(marshal_filename, not_list)
-    return messages[index].rstrip()
+    return get_indexed_message(message_filename, index)
 
 def queue_message(message_filename, message):
     """Append a message to a file"""
