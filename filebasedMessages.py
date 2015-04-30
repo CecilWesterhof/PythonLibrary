@@ -1,5 +1,5 @@
 """
-Some functions for file based message habdling
+Some functions for file based message handling
 It does not take care of race conditions
 So if mutating functions are called at the same time from different
 threads/programs corruption is possible.
@@ -25,7 +25,7 @@ class GetMessageError(Exception):
 
 
 ### Have a special case for large files
-def dequeue_message(message_filename, save_filename = None, isLarge? = False):
+def dequeue_message(message_filename, save_filename = None, isLarge = False):
     """
     Get the first message from a file and remove it from the file
     If save_filename not None use it to save the message
