@@ -5,8 +5,9 @@ So if it is called at the same time from different threads/programs
 corruption is possible.
 Defined functions:
 - dequeue_message
-- get_message
+- get_indexed_message
 - get_nr_of_messages
+- get_random_message
 - queue_message
 - save_history
 - used_messages
@@ -27,25 +28,39 @@ def dequeue_message(message_filename, save_filename = None):
     If save_filename not None use it to save the message
     """
 
-    messages    = open(expanduser(message_filename), 'r').readlines()
+    with open(expanduser(message_filename), 'r') as f:
+        messages = f.readlines()
     nr_of_msg   = len(messages)
-
     if nr_of_msg == 0:
         raise GetMessageError, \
             '{0} does not contains any messages'.format(message_filename)
     message = messages.pop(0).rstrip()
-    open(expanduser(message_filename), 'w').writelines(messages)
+    with open(expanduser(message_filename), 'w') as f:
+        writelines(messages)
     if save_filename != None:
         queue_message(save_filename, message)
     return message
 
-def get_message(message_filename, marshal_filename,
+def get_indexed_message(message_filename, index):
+    """
+    Get index message from a file, where 0 gets the first message
+    """
+
+    with open(expanduser(message_filename), 'r') as f:
+        return f.readlines()[index].rstrip()
+
+def get_nr_of_messages(message_filename):
+    with open(expanduser(message_filename), 'r') as f:
+        return len(f.readlines())
+
+def get_random_message(message_filename, marshal_filename,
                 history, need_warning, max_tries):
     """
     Get a random message from a file which is not used in 'recent history'
     """
 
-    messages    = open(expanduser(message_filename), 'r').readlines()
+    with open(expanduser(message_filename), 'r') as f:
+        messages = f.readlines()
     not_list    = used_messages(marshal_filename)
     nr_of_msg   = len(messages)
     tries       = 0
@@ -78,25 +93,20 @@ def get_message(message_filename, marshal_filename,
     save_history(marshal_filename, not_list)
     return messages[index].rstrip()
 
-def get_nr_of_messages(message_filename):
-    return len(open(expanduser(message_filename), 'r').readlines())
-
 def queue_message(message_filename, message):
     """Append a message to a file"""
 
-    open(expanduser(message_filename), 'a').write(message + '\n')
+    with open(expanduser(message_filename), 'a') as f:
+        f.write(message + '\n')
 
 def save_history(marshal_filename, list_to_save):
     """Save message history"""
 
-    marshal_file = open(expanduser(marshal_filename), 'w')
-    dump(list_to_save, marshal_file)
-    marshal_file.close()
+    with open(expanduser(marshal_filename), 'w') as f:
+        dump(list_to_save, f)
 
 def used_messages(marshal_filename):
     """Get message history"""
 
-    marshal_file    = open(expanduser(marshal_filename), 'r')
-    not_list        = load(marshal_file)
-    marshal_file.close()
-    return not_list
+    with open(expanduser(marshal_filename), 'r') as f:
+        return load(f)
