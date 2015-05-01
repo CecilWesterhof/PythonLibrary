@@ -40,11 +40,13 @@ def dequeue_message(message_filename, save_filename = None, isLarge = False):
             '{0} does not contains any messages'.format(message_filename)
     message = messages.pop(0).rstrip()
     with open(expanduser(message_filename), 'w') as f:
-        writelines(messages)
+        f.writelines(messages)
     if save_filename != None:
         queue_message(save_filename, message)
     return message
 
+### Possibilty to work with negative index
+### Possibility to work with a slice
 def get_indexed_message(message_filename, index):
     """
     Get index message from a file, where 0 gets the first message
