@@ -1,8 +1,21 @@
 # This Python file uses the following encoding: utf-8
 """Some utilty classes and functions that could be handy"""
 
+import sys
+
+from time import strftime
+
 ##### Classes
 
+### Improvements
+### Create a next_values
+### Create a internal checking function
+### Implement no_rolling_sum?
+### Expand testing
+### Option to force no_rolling_sum when no_rolling_sum? is True
+### - for the current call
+### - for the current call and length -1 following
+### Get current average
 class MovingAverage:
     """
     http://en.wikipedia.org/wiki/Moving_average
@@ -15,6 +28,7 @@ class MovingAverage:
 
     An extension would be to accept all numeric types.
     """
+
     def next_value(self, next):
         if not (isinstance(next, int) or isinstance(next, float)):
             raise TypeError('Parameter has to be (subclasss of) float or int')
@@ -36,6 +50,37 @@ class MovingAverage:
         self._length            = length
         self._old_values        = []
         self._current_total     = 0.0
+
+### Have the possibility to give the stream instead of using stdout
+class TimedMessage:
+    """
+    For printing messages with time prepended before it
+    Has the possibilty to keep time print blank for when several messages
+    are send shortly after eachother.
+    Also the possibilty to stay on the same line when things need to be appended
+    """
+
+    def give_msg(self, message, show_time = True, use_newline = True):
+        """
+        Prints the message to stdout
+        Use show_time = False when you do not want time
+        Use use_newline = False if you do not want a newline
+        """
+
+        if show_time:
+            time = strftime(self._format)
+        else:
+            time = self._blank_time
+        formatted_message = time + message
+        if use_newline:
+            print(formatted_message)
+        else:
+            sys.stdout.write(formatted_message)
+            sys.stdout.flush()
+
+    def __init__(self, format = '%H:%M:%S: '):
+        self._format        = format
+        self._blank_time    = ' ' * len(strftime(self._format))
 
 
 ##### Functions
