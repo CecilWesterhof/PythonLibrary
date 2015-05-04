@@ -106,8 +106,8 @@ def get_random_message(message_filename, marshal_filename,
             format(history, nr_of_msg))
     # Need a do ... while loop
     while True:
-        index = randint(0, nr_of_msg - 1)
-        ++tries
+        index   = randint(0, nr_of_msg - 1)
+        tries  += 1
         if not index in not_list:
             break
         if tries >= max_tries:
