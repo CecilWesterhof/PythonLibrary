@@ -47,7 +47,8 @@ def dequeue_message(message_filename, save_filename = None, isLarge = False):
         (filepath,
          file)      = split(real_file)[0]
         message     = get_indexed_message(real_file, 0)
-        with NamedTemporaryFile(mode = 'w', prefix = file + '_', dir = filepath, delete = False) as tf:
+        with NamedTemporaryFile(mode = 'w', prefix = file + '_',
+                                dir = filepath, delete = False) as tf:
             tempfile = tf.name
             with open(real_file, 'r') as f:
                 for line in islice(f, 1, None):
@@ -57,16 +58,20 @@ def dequeue_message(message_filename, save_filename = None, isLarge = False):
         queue_message(save_filename, message)
     return message
 
-### Possibilty to work with negative index
 ### Possibility to work with a slice
 def get_indexed_message(message_filename, index):
     """
     Get index message from a file, where 0 gets the first message
+    A negative index gets messages indexed from the end of the file
     Use get_nr_of_messages to get the number of messages in the file
     """
 
-    assert index >= 0
-    with open(expanduser(message_filename), 'r') as f:
+    real_file       = expanduser(message_filename)
+    nr_of_messages  = get_nr_of_messages(real_file)
+    if index < 0:
+        index += nr_of_messages
+    assert abs(index) < nr_of_messages
+    with open(real_file, 'r') as f:
         try:
             [line] = islice(f, index, index + 1)
         except ValueError:
