@@ -16,31 +16,43 @@ Defined functions:
 
 from itertools  import islice
 from marshal    import dump, load
-from os.path    import expanduser
+from os         import rename
+from os.path    import expanduser, split
 from random     import randint
+from tempfile   import NamedTemporaryFile
 
 
 class GetMessageError(Exception):
     pass
 
 
-### Have a special case for large files
 def dequeue_message(message_filename, save_filename = None, isLarge = False):
     """
     Get the first message from a file and remove it from the file
-    If save_filename not None use it to save the message
-    Not intended for large files (yet)
+    If save_filename not None it is used to save the message
+    Use isLarge = True when you do not want to load the file in memory
     """
 
-    with open(expanduser(message_filename), 'r') as f:
-        messages = f.readlines()
-    nr_of_msg   = len(messages)
-    if nr_of_msg == 0:
-        raise GetMessageError, \
-            '{0} does not contains any messages'.format(message_filename)
-    message = messages.pop(0).rstrip()
-    with open(expanduser(message_filename), 'w') as f:
-        f.writelines(messages)
+    real_file = expanduser(message_filename)
+    if get_nr_of_messages(real_file) == 0:
+        raise GetMessageError('{0} does not contains any messages'.
+                              format(message_filename))
+    if not isLarge:
+        with open(real_file, 'r') as f:
+            messages = f.readlines()
+        message = messages.pop(0).rstrip()
+        with open(expanduser(message_filename), 'w') as f:
+            f.writelines(messages)
+    else:
+        (filepath,
+         file)      = split(real_file)[0]
+        message     = get_indexed_message(real_file, 0)
+        with NamedTemporaryFile(mode = 'w', prefix = file + '_', dir = filepath, delete = False) as tf:
+            tempfile = tf.name
+            with open(real_file, 'r') as f:
+                for line in islice(f, 1, None):
+                    tf.write(line)
+        rename(tempfile, real_file)
     if save_filename != None:
         queue_message(save_filename, message)
     return message
@@ -94,8 +106,9 @@ def get_random_message(message_filename, marshal_filename,
         if not index in not_list:
             break
         if tries >= max_tries:
-            raise GetMessageError, 'Did not get a message after {0} tries'. \
-                format(tries)
+            raise GetMessageError('Did not get a message after {0} tries'.
+                                  format(tries))
+    print('Used {0} tries to get a message'.format(tries)) ### Temporaly
     if tries >= need_warning:
         print('Needed {0} tries to get a message'.format(tries))
     # Add last used to list
