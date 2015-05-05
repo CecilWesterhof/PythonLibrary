@@ -45,9 +45,9 @@ def dequeue_message(message_filename, save_filename = None, isLarge = False):
             f.writelines(messages)
     else:
         (filepath,
-         file)      = split(real_file)[0]
+         filename)  = split(real_file)[0]
         message     = get_indexed_message(real_file, 0)
-        with NamedTemporaryFile(mode = 'w', prefix = file + '_',
+        with NamedTemporaryFile(mode = 'w', prefix = filename + '_',
                                 dir = filepath, delete = False) as tf:
             tempfile = tf.name
             with open(real_file, 'r') as f:
@@ -58,7 +58,6 @@ def dequeue_message(message_filename, save_filename = None, isLarge = False):
         queue_message(save_filename, message)
     return message
 
-### Possibility to work with a slice
 def get_indexed_message(message_filename, index):
     """
     Get index message from a file, where 0 gets the first message
@@ -66,17 +65,39 @@ def get_indexed_message(message_filename, index):
     Use get_nr_of_messages to get the number of messages in the file
     """
 
+    return get_message_slice(message_filename, index, index)[0]
+
+def get_message_slice(message_filename, start, end, skip = 0):
+    """
+    Get a slice of messages, where 0 is the first message
+    Works with negative indexes
+    The values can be ascending and descending
+    Skip needs to be greater or equal 0
+    """
+
+    message_list    = []
     real_file       = expanduser(message_filename)
     nr_of_messages  = get_nr_of_messages(real_file)
-    if index < 0:
-        index += nr_of_messages
-    assert abs(index) < nr_of_messages
+    if start < 0:
+        start += nr_of_messages
+    if end < 0:
+        end += nr_of_messages
+    assert((start >= 0) and (start < nr_of_messages))
+    assert((end   >= 0) and (end   < nr_of_messages))
+    assert  skip  >= 0, 'Step needs to be positve'
+    if start > end:
+        tmp             = start
+        start           = end
+        end             = tmp
+        need_reverse    = True
+    else:
+        need_reverse    = False
     with open(real_file, 'r') as f:
-        try:
-            [line] = islice(f, index, index + 1)
-        except ValueError:
-            raise IndexError
-        return line.rstrip()
+        for message in islice(f, start, end, skip + 1):
+            message_list.append(message.rstrip())
+    if need_reverse:
+        message_list.reverse()
+    return message_list
 
 def get_nr_of_messages(message_filename):
     i = -1
