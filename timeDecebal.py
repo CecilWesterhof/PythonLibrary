@@ -6,7 +6,7 @@ import timeit
 
 ##### Classes
 
-# This code is mostly from Steven D'Aprano:
+# The code for the class Timer is mostly from Steven D'Aprano:
 # http://code.activestate.com/recipes/577896-benchmark-code-with-the-with-statement/
 # I did some cosmetic changes.
 # The documentation is mine.
