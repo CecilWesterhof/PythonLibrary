@@ -10,11 +10,13 @@ import timeit
 # http://code.activestate.com/recipes/577896-benchmark-code-with-the-with-statement/
 # I did some cosmetic changes.
 # The documentation is mine.
+#
 # Example usage:
 # t = Timer()
 # with t:
 #     <CODE TO TIME>
 # used_time   = t.interval
+#
 # __init__  is called when a class is created
 # __enter__ is called when a with is entered
 # __exit__  is called when a with is exited
