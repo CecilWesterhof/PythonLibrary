@@ -9,9 +9,14 @@ import pickle
 import re
 import sys
 
-from os.path        import expanduser
-from time           import sleep, strftime, time
-from urllib.request import urlopen
+from os.path    import expanduser
+from platform   import python_version
+from time       import sleep, strftime, time
+
+if python_version()[0] < '3':
+    from urllib         import urlopen
+else:
+    from urllib.request import urlopen
 
 
 ##### Exception Classes
@@ -105,6 +110,7 @@ class TimedMessage:
         if use_newline:
             print(formatted_message)
         else:
+            # To work with Python2 the flush is a seperate statement
             sys.stdout.write(formatted_message)
             sys.stdout.flush()
 
@@ -216,7 +222,7 @@ def save_serialization(format, data, filename):
     with open(expanduser(filename), 'wb') as out_f:
         format.dump(data, out_f)
 
-### Extension: instead of printing the needed time returm it
+### Extension: instead of printing the needed time return it
 def time_fetchURLs(server, URLs, times, wait_between_fetches):
     '''
     Sometimes you need to know the time needed for fetching a sequence of URLs
@@ -234,7 +240,8 @@ def time_fetchURLs(server, URLs, times, wait_between_fetches):
         for url in URLs:
             urlopen(server + url).read()
         end_time    = time()
-        print('It took {0:.5f} seconds'.format(end_time - start_time), flush = True)
+        print('It took {0:.5f} seconds'.format(end_time - start_time))
+        sys.stdout.flush()
 
     if times < 1:
         raise ValueError('You should fetch at least once')
