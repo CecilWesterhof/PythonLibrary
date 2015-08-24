@@ -1,10 +1,14 @@
 # This Python file uses the following encoding: utf-8
-"""Some math functions"""
+'''Some math functions'''
 
-from __future__     import print_function
+from __future__     import division, print_function
 
 import getopt
+import math
 import sys
+
+# To limit the stack trace with a recursive error
+sys.tracebacklimit = 10
 
 import utilDecebal
 
@@ -15,6 +19,28 @@ from utilDecebal    import memoize
 
 
 ##### Functions
+
+def ackermann(m, n):
+    if m == 0:
+        return n + 1
+    elif n == 0:
+        return ackermann(m - 1, 1)
+    else:
+        return ackermann(m - 1, ackermann(m, n - 1))
+
+def ackermann2(m, n):
+    if m == 0:
+        return n + 1
+    elif m == 1:
+        return n + 2
+    elif m == 2:
+        return 2 * n + 3
+    elif m == 3:
+        return 2 ** (n + 3) - 3
+    elif n == 0:
+        return ackermann2(m - 1, 1)
+    else:
+        return ackermann2(m - 1, ackermann2(m, n - 1))
 
 def factorial_iterative(x):
     assert x >= 0
@@ -59,18 +85,27 @@ def factorial_tail_recursion_old(x):
         x -= 1
 
 def fibonacci(n):
-    """
+    '''
     Calculates fibonacci number, uses fibonacci_iterative
-    """
+    '''
 
-    fibonacci_iterative(n)
+    return fibonacci_iterative(n)
+
+def fibonacci_analytic(n):
+    assert n >= 0
+    if (n == 0) or (n == 1):
+        return n
+    sqrt_5  = math.sqrt(5)
+    p       = (1 + sqrt_5) / 2
+    q       = 1 / p
+    return int((p ** n + q ** n) / sqrt_5 + 0.5 )
 
 def fibonacci_iterative(n):
-    """
+    '''
     Iterative way of calculating fibonacci
     Less clear as recursive way, but can be called with 500
     Is also ten to fifteen times as fast as memoized recursive version
-    """
+    '''
 
     assert n >= 0
     if (n == 0) or (n == 1):
@@ -83,10 +118,10 @@ def fibonacci_iterative(n):
 
 @memoize
 def fibonacci_memoize(n):
-    """
+    '''
     Recursive way with memoize of defining Fibonacci
     When called without a parameter it clears the cache
-    """
+    '''
 
     assert n >= 0
     if (n == 0) or (n == 1):
@@ -95,19 +130,19 @@ def fibonacci_memoize(n):
         return fibonacci_memoize(n - 1) + fibonacci_memoize(n - 2)
 
 def fibonacci_memoize_after_clearing(n):
-    """
+    '''
     Calls fibonacci_memoize after clearing the cache
     Especially useful for testing the performance of fibonacci_memoize
-    """
+    '''
 
     fibonacci_memoize()
     return fibonacci_memoize(n)
 
 def fibonacci_old(n):
-    """
+    '''
     Standard recursive way of defining Fibonacci
     Becomes expensive very fast
-    """
+    '''
 
     assert n >= 0
     if (n == 0) or (n == 1):
@@ -115,11 +150,22 @@ def fibonacci_old(n):
     else:
         return fibonacci_old(n - 1) + fibonacci_old(n - 2)
 
+def get_ratio(first_val, second_val, do_sort = True):
+    '''
+    Get the ratio of two numbers, default <= 1
+    With do_sort = False ratio is calculated in the order of the numbers
+    '''
+
+    values = [first_val, second_val]
+    if do_sort:
+        values.sort()
+    return values[0] / values[1]
+
 def happy_number(n):
-    """
+    '''
     Check if a number is a happy number
     https://en.wikipedia.org/wiki/Happy_number
-    """
+    '''
 
     assert n >= 1
     def create_current(n):
@@ -170,10 +216,10 @@ def happy_numbers_list(n):
     return found
 
 def lucky_numbers(n):
-    """
+    '''
     Lucky numbers from 1 up-to n
     http://en.wikipedia.org/wiki/Lucky_number
-    """
+    '''
 
     assert n >= 1
     if n < 3:
@@ -198,9 +244,9 @@ def lucky_numbers_count(n):
 ##### Test functions
 
 def time_function(name, n, repeats, notifier, description = '', display = True):
-    """
+    '''
     Helper function to test the performance of functions
-    """
+    '''
 
     if display:
         if description == '':
@@ -373,7 +419,7 @@ if __name__ == '__main__':
                 'factorial_tail_recursion    ',
                 'factorial_tail_recursion_old',
         ]:
-            time_function(function, 985, repeats, notify)
+            time_function(function, 975, repeats, notify)
         print('')
         repeats = 1
         notify.give_msg('Start with the time needed to calculate {0} times'.format(repeats))
@@ -417,26 +463,42 @@ if __name__ == '__main__':
             if fibonacci_iterative(i) != fibonacci_numbers[i]:
                 notify.give_msg('Error calculating fibonacci_iterative({0})'.format(i))
                 error = True
+            if fibonacci_analytic(i) != fibonacci_numbers[i]:
+                notify.give_msg('Error calculating fibonacci_analytic({0})'.format(i))
+                error = True
             if fibonacci_memoize(i) != fibonacci_numbers[i]:
                 notify.give_msg('Error calculating fibonacci_memoize({0})'.format(i))
                 error = True
             if fibonacci_old(i) != fibonacci_numbers[i]:
                 notify.give_msg('Error calculating fibonacci_old({0})'.format(i))
                 error = True
-        start   = 50
-        end     = 10 ** 6
-        step    = 50000
-        notify.give_msg('Check that fibonacci_iter and fibonacci_memoize give '
+        start   = 39
+        end     = 70
+        step    = 1
+        notify.give_msg('Check that fibonacci analytic and iterative give '
                         'the same values for {0} upto {1} step {2}'.
                         format(start, end, step))
         for i in range(start, end + 1, step):
-            if (i % 100000) == start:
+            fibonacci_ana   = fibonacci_analytic(i)
+            fibonacci_iter  = fibonacci_iterative(i)
+            if fibonacci_ana != fibonacci_iter:
+                notify.give_msg('fibonacci_analytic({0}) not equal fibonacci_iterative({0}):'
+                                '{1}, {2}'.format(i, fibonacci_ana, fibonacci_iter))
+                error = True
+        start   = 50
+        end     = 3 * 10 ** 5
+        step    = 332
+        notify.give_msg('Check that fibonacci iterative and memoize give '
+                        'the same values for {0} upto {1} step {2}'.
+                        format(start, end, step))
+        for i in range(start, end + 1, step):
+            if (i % (step * 30)) == start:
                 notify.give_msg('Currently at %7d' % i)
-            fibonacci_iter       = fibonacci_iterative(i)
-            fibonacci_memoize    = fibonacci_iterative(i)
-            if fibonacci_iter != fibonacci_memoize:
+            fibonacci_iter  = fibonacci_iterative(i)
+            fibonacci_mem   = fibonacci_memoize(i)
+            if fibonacci_iter != fibonacci_mem:
                 notify.give_msg('fibonacci_iterative({0}) not equal fibonacci_memoize({0}):'
-                                '{1}, {2}'.format(i, fibonacci_iter, fibonacci_memoize))
+                                '{1}, {2}'.format(i, fibonacci_iter, fibonacci_mem))
                 error = True
         if not error:
             notify.give_msg('Calculating values OK')
@@ -453,6 +515,9 @@ if __name__ == '__main__':
         for n in range(15, 36, 5):
             time_function('fibonacci_iterative', n, repeats, notify)
         print('')
+        for n in range(15, 36, 5):
+            time_function('fibonacci_analytic', n, repeats, notify)
+        print('')
         for n in range(310, 331, 5):
             time_function('fibonacci_memoize_after_clearing', n, repeats, notify,
                           'fibonacci_memoize')
@@ -460,11 +525,13 @@ if __name__ == '__main__':
         for n in range(310, 331, 5):
             time_function('fibonacci_iterative', n, repeats, notify)
         print('')
+        for n in range(310, 331, 5):
+            time_function('fibonacci_analytic', n, repeats, notify)
+        print('')
 
         for large_fibonacci in range(20, 41, 5):
             notify.give_msg(
-                'Calculating fibonacci_old, fibonacci_memoize and '
-                'fibonacci_iterative')
+                'Calculating fibonacci old, memoize, iterative and analytic')
             notify.give_msg(
                 'once for {0} to determine speed increase'.
                 format(large_fibonacci),
@@ -477,6 +544,9 @@ if __name__ == '__main__':
             time_fibonacci_iter = time_function('fibonacci_iterative',
                                                 large_fibonacci, 1, notify,
                                                 display = False)
+            time_fibonacci_ana  = time_function('fibonacci_analytic',
+                                                large_fibonacci, 1, notify,
+                                                display = False)
             notify.give_msg('Increase old     -> memoize   {0:.3E}'.
                             format(int(time_fibonacci_old / time_fibonacci_mem)))
             notify.give_msg('({0:.3E} / {1:.3E})'.
@@ -487,10 +557,13 @@ if __name__ == '__main__':
             notify.give_msg('({0:.3E} / {1:.3E})'.
                             format(time_fibonacci_mem, time_fibonacci_iter),
                             show_time = False)
+            notify.give_msg('({0:.3E} / {1:.3E})'.
+                            format(time_fibonacci_iter, time_fibonacci_ana),
+                            show_time = False)
             print('')
         large_fibonacci = 330
         notify.give_msg(
-            'Calculating fibonacci_memoize and fibonacci_iterative')
+            'Calculating fibonacci memoize, iterative and analytic')
         notify.give_msg(
             'once for {0} to determine speed increase'.
             format(large_fibonacci),
@@ -501,10 +574,16 @@ if __name__ == '__main__':
         time_fibonacci_iter = time_function('fibonacci_iterative',
                                             large_fibonacci, 1, notify,
                                             display = False)
+        time_fibonacci_ana = time_function('fibonacci_analytic',
+                                            large_fibonacci, 1, notify,
+                                            display = False)
         notify.give_msg('Increase memoize -> iterative {0}'.
                         format(int(time_fibonacci_mem / time_fibonacci_iter)))
         notify.give_msg('({0:.3E} / {1:.3E})'.
                         format(time_fibonacci_mem, time_fibonacci_iter),
+                        show_time = False)
+        notify.give_msg('({0:.3E} / {1:.3E})'.
+                        format(time_fibonacci_iter, time_fibonacci_ana),
                         show_time = False)
         print('')
         notify.give_msg(
@@ -583,7 +662,7 @@ if __name__ == '__main__':
         if not error:
             notify.give_msg('lucky_numbers OK')
         print('')
-        count = 10 ** 8
+        count = 5 * 10 ** 7
         time_function('lucky_numbers', count, 1, notify)
         notify.give_msg('Calculating lucky_numbers_count({0})'.format(count))
         notify.give_msg(str(lucky_numbers_count(count)))
