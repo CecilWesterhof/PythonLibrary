@@ -1,6 +1,8 @@
 # This Python file uses the following encoding: utf-8
 '''Some utilty classes and functions that could be handy'''
 
+from __future__     import division, print_function
+
 import functools
 import json
 import marshal
@@ -9,14 +11,9 @@ import pickle
 import re
 import sys
 
-from os.path    import expanduser
-from platform   import python_version
-from time       import sleep, strftime, time
-
-if python_version()[0] < '3':
-    from urllib         import urlopen
-else:
-    from urllib.request import urlopen
+from os.path                    import expanduser
+from six.moves.urllib.request   import urlopen
+from time                       import sleep, strftime, time
 
 
 ##### Exception Classes
@@ -240,6 +237,7 @@ def time_fetchURLs(server, URLs, times, wait_between_fetches):
         for url in URLs:
             urlopen(server + url).read()
         end_time    = time()
+        # To work with Python2 the flush is a seperate statement
         print('It took {0:.5f} seconds'.format(end_time - start_time))
         sys.stdout.flush()
 
